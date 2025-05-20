@@ -1,0 +1,6 @@
+import:
+	A 		https://github.com/ar-visions/A 		main
+	vec 	https://github.com/ar-visions/vec 		main
+		-lvec
+	linux:
+		-lasound

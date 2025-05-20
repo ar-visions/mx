@@ -1,0 +1,9 @@
+#ifndef _SFX_
+#define _SFX_
+
+#define sfx_schema(C,S,...) \
+    M(C,S, public, prop, i64, time_start)
+
+declare_class(sfx)
+
+#endif
