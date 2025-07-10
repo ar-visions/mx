@@ -1,0 +1,20 @@
+
+#define llm_schema(X,Y,...) \
+    i_prop    (X,Y, intern, struct llama_model*, imdl) \
+    i_prop    (X,Y, intern, struct llama_vocab*, ivocab) \
+    i_prop    (X,Y, public, path, uri) \
+    i_override(X,Y, method, init) \
+    i_override(X,Y, method, dealloc)
+declare_class(llm)
+
+#define conversation_schema(X,Y,...) \
+    i_prop    (X,Y, intern, struct llama_context*, ictx) \
+    i_prop    (X,Y, intern, struct llama_sampler*, ismpl) \
+    i_prop    (X,Y, required, llm,          model) \
+    i_prop    (X,Y, public, i64,            n_past) \
+    i_prop    (X,Y, public, array,          content) \
+    i_method  (X,Y, public, none,           append, object) \
+    i_method  (X,Y, public, string,         query,  object) \
+    i_override(X,Y, method, init) \
+    i_override(X,Y, method, dealloc)
+declare_class(conversation)

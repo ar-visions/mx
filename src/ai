@@ -1,0 +1,150 @@
+#ifndef _AI_
+#define _AI_
+
+#define Activation_schema(E,T,Y,...) \
+    enum_value_v(E,T,Y, _none,            0) \
+    enum_value_v(E,T,Y, relu,             1) \
+    enum_value_v(E,T,Y, tanh,             2)
+declare_enum (Activation)
+
+typedef struct _tensor* tensor;
+#define tensor_schema(X,Y,...) \
+    i_ctr     (X,Y, public,   string) \
+    i_ctr     (X,Y, public,   array) \
+    i_ctr     (X,Y, public,   image) \
+    i_prop    (X,Y, public,   shape,     shape) \
+    i_prop    (X,Y, public,   vector,    data,     meta, i8) \
+    i_prop    (X,Y, public,   vector,    realized, meta, f32) \
+    i_prop    (X,Y, public,   vector,    grad,     meta, f32) \
+    i_prop    (X,Y, public,   i32,       offset) \
+    i_prop    (X,Y, public,   f32,       scale) \
+    i_prop    (X,Y, intern,   u64,       total) \
+    i_method  (X,Y, public,   f32,       sum) \
+    i_method  (X,Y, public,   f32,       grad_sum) \
+    i_method  (X,Y, public,   none,      gemm,      tensor, tensor, Activation, tensor) \
+    i_override(X,Y, method,   init)
+declare_class(tensor)
+
+#define Initializer_schema(E,T,Y,...) \
+    enum_value_v(E,T,Y, undefined,        0) \
+    enum_value_v(E,T,Y, random,           1) \
+    enum_value_v(E,T,Y, zeros,            2) \
+    enum_value_v(E,T,Y, glorot_uniform,   3)
+declare_enum (Initializer)
+
+#define Padding_schema(E,T,Y,...) \
+    enum_value_v(E,T,Y, valid,            0) \
+    enum_value_v(E,T,Y, same,             1)
+declare_enum (Padding)
+
+#define Pooling_schema(E,T,Y,...) \
+    enum_value_v(E,T,Y, undefined,        0) \
+    enum_value_v(E,T,Y, max,              1) \
+    enum_value_v(E,T,Y, min,              2) \
+    enum_value_v(E,T,Y, average,          3)
+declare_enum (Pooling)
+
+/// standard training op
+#define op_schema(X,Y,...) \
+    i_prop    (X,Y, required, tensor,        tensor) \
+    i_prop    (X,Y, required, string,        name) \
+    i_prop    (X,Y, public,   array,         inputs, meta, string) \
+    i_prop    (X,Y, public,   Activation,    activation) \
+    i_prop    (X,Y, public,   i8,            threshold) \
+    i_prop    (X,Y, intern,   array,         op_inputs) \
+    i_prop    (X,Y, intern,   tensor,        output) \
+    i_prop    (X,Y, public,   tensor,        weights) \
+    i_prop    (X,Y, public,   tensor,        bias)  \
+    i_method  (X,Y, public,   none,          finalize) \
+    i_method  (X,Y, public,   none,          forward) \
+    i_method  (X,Y, public,   tensor,        back, tensor)
+declare_class(op)
+
+#define ops_schema(X,Y,...)
+declare_class_2(ops, array, op)
+
+#define input_schema(X,Y,...) \
+    i_prop(X,Y, public, tensor, input)
+declare_class_2(input, op)
+
+#define output_schema(X,Y,...)
+declare_class_2(output, op)
+
+/*
+---------------------------------------------------------------------------------------
+ concatenate (merges multiple vectors into one along provided axis)
+---------------------------------------------------------------------------------------
+ axis - The main property that specifies which axis to concatenate along. For example:
+ axis=1 or axis=-1: Concatenate along the feature/channel dimension (most common)
+ axis=0: Concatenate along the batch dimension
+ for 2D inputs: axis=1 would concatenate horizontally
+ for images: axis=3 or axis=-1 would concatenate along the channel dimension
+*/
+#define concatenate_schema(X,Y,...) \
+    i_prop(X,Y, public, i32, axis) \
+    i_override(X,Y, method, finalize, forward)
+declare_class_2(concatenate, op)
+
+
+#define conv_schema(X,Y,...) \
+    i_prop    (X,Y, public,   i32,        axis)    \
+    i_prop    (X,Y, required, Padding,    padding)  \
+    i_prop    (X,Y, required, shape,      kernel_size)  \
+    i_prop    (X,Y, required, shape,      strides) \
+    i_prop    (X,Y, public,   i32,        in_channels) \
+    i_prop    (X,Y, public,   i32,        out_channels) \
+    i_prop    (X,Y, public,   tensor,     weights_matrix) \
+    i_prop    (X,Y, public,   tensor,     im2col_matrix) \
+    i_override(X,Y, method,   finalize) \
+    i_override(X,Y, method,   forward) \
+    i_override(X,Y, method,   back)
+declare_class_2(conv, op)
+
+#define reshape_schema(X,Y,...) \
+    i_prop    (X,Y, public,   u32,        units)
+declare_class_2(reshape, op)
+
+#define flatten_schema(X,Y,...) \
+    i_override(X,Y, method, forward) \
+    i_override(X,Y, method, back)
+declare_class_2(flatten, op)
+
+#define dense_schema(X,Y,...) \
+    i_prop    (X,Y, public,   u32,        units) \
+    i_prop    (X,Y, public,   u32,        input_dim) \
+    i_prop    (X,Y, public,   u32,        output_dim) \
+    i_prop    (X,Y, public,   object,     kernel_initializer) \
+    i_prop    (X,Y, public,   object,     weight_initializer) \
+    i_override(X,Y, method,   finalize) \
+    i_override(X,Y, method,   forward) \
+    i_override(X,Y, method,   back)
+declare_class_2(dense, op)
+
+#define pool_schema(X,Y,...) \
+    i_prop    (X,Y, public,   Pooling,    type) \
+    i_prop    (X,Y, required, shape,      pool_size)  \
+    i_prop    (X,Y, public,   shape,      strides) \
+    i_override(X,Y, method,   finalize) \
+    i_override(X,Y, method,   forward) \
+    i_override(X,Y, method,   back)
+declare_class_2(pool, op)
+
+#define relu_schema(X,Y,...) \
+    i_override(X,Y, method,     init)
+declare_class_2(relu, op)
+
+#define keras_schema(X,Y,...) \
+    i_prop    (X,Y, required, string,        ident) \
+    i_prop    (X,Y, public,   num,           quality) \
+    i_prop    (X,Y, public,   ops,           order) \
+    i_prop    (X,Y, public,   ops,           ops) \
+    i_prop    (X,Y, public,   tensor,        output) \
+    i_prop    (X,Y, public,   tensor,        input) \
+    i_prop    (X,Y, intern,   map,           op_map) \
+    i_method  (X,Y, public,   none,    train,    i32, map, f32) \
+    i_method  (X,Y, public,   tensor,  forward,  tensor) \
+    i_method  (X,Y, public,   tensor,  back,     tensor) \
+    i_override(X,Y, method,   init)
+declare_class(keras)
+
+#endif
