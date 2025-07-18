@@ -44,8 +44,8 @@ none conversation_init(conversation a) {
     ));
     llama_sampler_chain_add(a->ismpl, llama_sampler_init_dist(LLAMA_DEFAULT_SEED));
     each(a->content, object, msg) {
-        path p = instanceof(msg, path);
-        string s = instanceof(msg, string);
+        path p = instanceof(msg, typeid(path));
+        string s = instanceof(msg, typeid(string));
         append(a, msg);
     }
 }
@@ -53,7 +53,7 @@ none conversation_init(conversation a) {
 
 static string convert_msg(object msg) {
     string     prompt    = null;
-    path       file      = instanceof(msg, path);
+    path       file      = instanceof(msg, typeid(path));
     if (file) {
         string raw = (string)read(file, typeid(string), null);
         array lines = split(raw, "\n");
@@ -75,7 +75,7 @@ static string convert_msg(object msg) {
         }
         append(prompt, "end-of-source\n");
     } else
-        prompt = instanceof(msg, string);
+        prompt = instanceof(msg, typeid(string));
     return prompt;
 }
 

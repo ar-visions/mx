@@ -35,8 +35,8 @@ image image_resize(image input, i32 out_w, i32 out_h) {
     float scale_y = (float)in_h / out_h;
     image output = image(width, out_w, height, out_h, format, input->format, surface, input->surface, channels, input->channels);
     
-    u8* src = (u8*)A_data((A)input);
-    u8* dst = (u8*)A_data((A)output);
+    u8* src = (u8*)vdata((A)input);
+    u8* dst = (u8*)vdata((A)output);
     opencv_resize_area(src, dst, input->format == Pixel_rgbaf32, in_w, in_h, input->channels, out_w, out_h);
     return output;
 }
@@ -48,8 +48,8 @@ image image_gaussian(image input, float amount) {
     int h = input->height;
     image output = image(width, w, height, h, format, input->format, surface, input->surface, channels, input->channels);
 
-    u8* src = (u8*)A_data((A)input);
-    u8* dst = (u8*)A_data((A)output);
+    u8* src = (u8*)vdata((A)input);
+    u8* dst = (u8*)vdata((A)output);
     opencv_gaussian(src, dst, input->format == Pixel_rgbaf32, w, h, input->channels, amount);
     return output;
 }

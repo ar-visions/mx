@@ -396,7 +396,7 @@ bool message_read_content(message m, sock sc) {
 
     object o = get(m->headers, cl);
     if (o) {
-        string v = instanceof(o, string);
+        string v = instanceof(o, typeid(string));
         if (v) {
             clen = atoi(v->chars);
         } else {

@@ -142,7 +142,7 @@ tensor tensor_with_array(tensor a, array dims) {
     i64 shape[32];
     i64 index = 0;
     each (dims, object, e) {
-        i64* i = (i64*)instanceof(e, i64);
+        i64* i = (i64*)instanceof(e, typeid(i64));
         shape[index++] = *i;
     }
     a->shape  = shape_from(index, shape);
