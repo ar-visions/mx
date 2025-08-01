@@ -1,0 +1,17 @@
+class llm
+    intern imdl   : ref llama_model
+    intern ivocab : ref llama_vocab
+    public uri    : path
+    extern override fn init    [ ]
+    extern override fn dealloc [ ]
+
+class conversation
+    intern ictx    : ref llama_context
+    intern ismpl   : ref llama_sampler
+    expect model   : llm
+    public n_past  : i64
+    public content : array
+    public fn append [ object ] -> none
+    public fn query  [ object ] -> string
+    extern override fn init    [ ]
+    extern override fn dealloc [ ]

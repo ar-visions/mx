@@ -1,0 +1,100 @@
+export enum protocol
+    undefined : 0
+    http      : 1
+    https     : 2
+    wss       : 3
+    ssh       : 4
+
+export enum web
+    undefined : 0
+    Response  : 1
+    Get       : 2
+    Post      : 3
+    Put       : 4
+    Delete    : 5
+
+export class uri
+    public mtype    : web
+    public proto    : protocol
+    public host     : string
+    public port     : i32
+    public query    : string
+    public resource : string
+    public args     : map
+    extern version  : string
+    extern fn addr   [ ] -> string
+    extern static fn parse  [ string, uri ] -> uri
+    extern static fn encode [ string ] -> string
+    extern static fn decode [ string ] -> string
+
+class sock
+    intern data : Session
+    extern ctr [ TLS ]
+    extern ctr [ uri ]
+    extern fn bind         [ uri ] -> bool
+    extern fn connect      [ ] -> bool
+    extern fn close        [ ] -> bool
+    extern fn set_timeout  [ i64 ] -> none
+    extern fn read_sz      [ handle, sz ] -> bool
+    extern fn recv         [ handle, sz ] -> sz
+    extern fn send_bytes   [ handle, sz ] -> sz
+    extern fn send_object  [ object ] -> sz
+    extern public fn read_until   [ string, i32 ] -> vector
+    extern static fn accept       [ TLS ] -> sock
+    extern override cast bool
+
+class Session
+    public tls        : TLS
+    intern fd         : mbedtls_net_context
+    intern ssl        : mbedtls_ssl_context
+    public connected  : bool
+    public timeout_ms : num
+    extern public ctr [ TLS ]
+    extern public ctr [ uri ]
+    extern public fn bind        [ uri ] -> bool
+    extern public fn connect     [ ] -> bool
+    extern public fn close       [ ] -> bool
+    extern public fn set_timeout [ i64 ] -> none
+    extern public fn read_sz     [ handle, sz ] -> bool
+    extern public fn recv        [ handle, sz ] -> sz
+    extern public fn send        [ handle, sz ] -> sz
+    extern public fn send_string [ string ] -> sz
+    extern public fn read_until  [ string, i32 ] -> vector
+    extern static fn accept      [ TLS ] -> Session
+
+class message
+    public query   : uri
+    public code    : i32
+    public headers : map
+    public content : object
+    extern public ctr [ sock ]
+    extern public ctr [ i32 ]
+    extern public ctr [ string ]
+    extern public fn method_type   [ ] -> web
+    extern public fn read_headers  [ sock ] -> bool
+    extern public fn read_content  [ sock ] -> bool
+    extern public fn write_status  [ sock ] -> bool
+    extern public fn write_headers [ sock ] -> bool
+    extern public fn write         [ sock ] -> bool
+    extern public fn text          [ ] -> string
+    extern public fn cookies       [ ] -> map
+    extern static fn query         [ uri, map, object ] -> message
+    extern static fn response      [ uri, i32, object, map ] -> message
+    extern override cast bool
+
+class TLS
+    intern fd       : extern mbedtls_net_context
+    intern entropy  : extern mbedtls_entropy_context
+    intern ctr_drbg : extern mbedtls_ctr_drbg_context
+    intern conf     : extern mbedtls_ssl_config
+    intern srvcert  : extern mbedtls_x509_crt
+    intern pkey     : extern mbedtls_pk_context
+    public url      : uri
+    public addr     : uri
+    intern ssl_ctx  : handle
+    intern ssl      : handle
+    extern override fn init [ ]
+
+string dns(string hostname)
+object json_request(uri addr, map args, map headers, subprocedure success_handler, subprocedure failure_handler)
+object request(uri url, map args)

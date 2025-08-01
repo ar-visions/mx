@@ -1,0 +1,87 @@
+enum Pixel
+    none        : 0
+    rgba8       : 1
+    rgb8        : 2
+    rgbf32      : 3
+    u8          : 4
+    rgbaf32     : 5
+    f32         : 6
+
+enum Filter
+    none        : 0
+    nearest     : 1
+    bilinear    : 3
+    trilinear   : 4
+    low         : 5
+    med         : 6
+    high        : 7
+
+enum Surface
+    none        : 0
+    color       : 1
+    normal      : 2
+    emission    : 3
+    rough       : 4
+    metal       : 5
+    height      : 6
+    ao          : 7
+    ior         : 8
+    environment : 9
+
+enum join
+    none        : 0
+    miter       : 1
+    round       : 2
+    bevel       : 3
+
+enum cap
+    none        : 0
+    round       : 1
+    square      : 2
+
+enum variant
+    none        : 0
+    small_caps  : 1
+    mono        : 2
+
+class font
+    public uri       : path
+    public bold      : bool
+    public italic    : bool
+    public underline : bool
+    public vari      : variant
+    public size      : f32
+    public kerning   : f32
+    opaque res       : handle
+    opaque tf        : handle
+    extern override fn copy    [ ]
+    extern override fn init    [ ]
+    extern override fn dealloc [ ]
+
+class image
+    public ctr [ string ]
+    public ctr [ symbol ]
+    public ctr [ cstr ]
+    public uri         : path
+    public surface     : Surface
+    public format      : Pixel
+    public pixel_size  : i32
+    public width       : i32
+    public height      : i32
+    public channels    : i32
+    public source      : object
+    public filter      : Filter
+    public user        : object
+    opaque res         : handle
+    opaque res_dealloc : hook
+    opaque res_bits    : ARef
+    public fn gaussian   [ f32 ] -> image
+    public fn resize     [ i32, i32 ] -> image
+    public fn png        [ path ] -> i32
+    public fn exr        [ path ] -> i32
+    public fn byte_count [ ] -> i64
+    public fn len        [ ] -> i64
+    public fn get        [ num ] -> object
+    extern override fn init     [ ]
+    extern override fn dealloc  [ ]
+    extern override fn copy     [ ]

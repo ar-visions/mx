@@ -1,0 +1,123 @@
+enum Activation
+    _none : 0
+    relu  : 1
+    tanh  : 2
+
+class tensor
+    public ctr [ string ]
+    public ctr [ array ]
+    public ctr [ image ]
+    public shape    : shape
+    public data     : vector i8
+    public realized : vector f32
+    public grad     : vector f32
+    public offset   : i32
+    public scale    : f32
+    intern total    : u64
+    public fn sum      [ ] -> f32
+    public fn grad_sum [ ] -> f32
+    public fn gemm     [ tensor  tensor  Activation  tensor ] -> none
+    extern override fn init   [ ]
+
+enum Initializer
+    undefined      : 0
+    random         : 1
+    zeros          : 2
+    glorot_uniform : 3
+
+enum Padding
+    valid : 0
+    same  : 1
+
+enum Pooling
+    undefined : 0
+    max       : 1
+    min       : 2
+    average   : 3
+
+# standard training op
+class op
+    expect tensor       : tensor
+    expect name         : string
+    public inputs       : array string
+    public activation   : Activation
+    public threshold    : i8
+    intern op_inputs    : array
+    intern output       : tensor
+    public weights      : tensor
+    public bias         : tensor
+    public fn finalize  [ ] -> none
+    public fn forward   [ ] -> none
+    public fn back      [ tensor ] -> tensor
+
+array ops [ op ]
+
+op input
+    public input : tensor
+
+op output
+
+# concatenate (merges multiple vectors into one along provided axis)
+# axis - The main property that specifies which axis to concatenate along. For example:
+# axis=1 or axis=-1: Concatenate along the feature/channel dimension (most common)
+# axis=0: Concatenate along the batch dimension
+# for 2D inputs: axis=1 would concatenate horizontally
+# for images: axis=3 or axis=-1 would concatenate along the channel dimension
+op concatenate
+    public axis : i32
+    extern override fn finalize [ ] -> none
+    extern override fn forward  [ ] -> none
+
+op conv
+    public axis           : i32
+    expect padding        : Padding
+    expect kernel_size    : shape
+    expect strides        : shape
+    public in_channels    : i32
+    public out_channels   : i32
+    public weights_matrix : tensor
+    public im2col_matrix  : tensor
+    extern override fn finalize  [ ] -> none
+    extern override fn forward   [ ] -> none
+    extern override fn back      [ tensor ] -> tensor
+
+op reshape
+    public units : u32
+
+op flatten
+    extern override fn forward [ ] -> none
+    extern override fn back    [ tensor ] -> tensor
+
+op dense
+    public units              : u32
+    public input_dim          : u32
+    public output_dim         : u32
+    public kernel_initializer : object
+    public weight_initializer : object
+    extern override fn finalize      [ ] -> none
+    extern override fn forward       [ ] -> none
+    extern override fn back          [ tensor ] -> tensor
+
+op pool
+    public type      : Pooling
+    expect pool_size : shape
+    public strides   : shape
+    extern override fn finalize [ ] -> none
+    extern override fn forward  [ ] -> none
+    extern override fn back     [ tensor ] -> tensor
+
+op relu
+    override fn init [ ]
+
+class keras
+    expect ident  : string
+    public quality  : num
+    public order    : ops
+    public operations : ops
+    public output   : tensor
+    public input    : tensor
+    intern op_map   : map
+    extern public fn train   [ i32 map f32 ] -> none
+    extern public fn forward [ tensor ] -> tensor
+    extern public fn back    [ tensor ] -> tensor
+    extern override fn init  [ ]
